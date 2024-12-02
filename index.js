@@ -34,14 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Backspace' || key === 'Delete') {
-            if (result.value === 'Error :(') {
+            if (result.value === 'Error :(' ||
+                result.value === 'Infinity' ||
+                result.value === 'NaN' ||
+                result.value === 'undefined') {
                 result.value = '';
             }
             result.value = result.value.slice(0, -1);
         }
 
 
-        if (key === 'Escape' || key === 'c' || key === 'C') {
+        if (key === 'Escape' || key === 'c' || key === 'C' ||
+            (event.ctrlKey && key === 'Backspace')) {
             document.querySelector('button[data-value="C"]').click();
         }
     });

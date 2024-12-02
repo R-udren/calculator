@@ -1,9 +1,6 @@
 :root {
     --primary-color: #007bff;
     --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --info-color: #17a2b8;
-    --warning-color: #ffc107;
     --danger-color: #dc3545;
     --light-color: #e0e0e0;
     --dark-color: #343a40;
@@ -76,6 +73,7 @@ body {
 .btn.enter {
     background-color: var(--primary-color);
     color: white;
+    grid-column: span 2;
 }
 
 .btn.enter:hover {
@@ -85,8 +83,19 @@ body {
 .btn.clear {
     background-color: var(--danger-color);
     color: white;
+    grid-column: span 2;
 }
 
 .btn.clear:hover {
+    background-color: var(--dark-color);
+}
+
+.btn.plus {
+    background-color: var(--secondary-color);
+    color: white;
+    grid-column: span 2;
+}
+
+.btn.plus:hover {
     background-color: var(--dark-color);
 }
