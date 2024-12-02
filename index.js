@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('result');
     const buttons = document.querySelectorAll('.btn');
+    const themeToggle = document.getElementById('theme-toggle');
 
     buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 result.value = '';
             } else if (value === '=') {
                 try {
-                    result.value = new Function('return ' + result.value)(); // safer than eval (I think so...)
+                    result.value = new Function('return ' + result.value)();
                 } catch {
                     result.value = 'Error :(';
                 }
@@ -20,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Keyboard support
+    themeToggle.addEventListener('click', () => {
+        document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+
     document.addEventListener('keydown', event => {
         const key = event.key;
         const button = document.querySelector(`button[data-value="${key}"]`);
@@ -34,18 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Backspace' || key === 'Delete') {
-            if (result.value === 'Error :(' ||
-                result.value === 'Infinity' ||
-                result.value === 'NaN' ||
-                result.value === 'undefined') {
+            if (result.value === 'Error :(' || result.value === 'Infinity' || result.value === 'NaN' || result.value === 'undefined') {
                 result.value = '';
             }
+
             result.value = result.value.slice(0, -1);
         }
 
-
-        if (key === 'Escape' || key === 'c' || key === 'C' ||
-            (event.ctrlKey && key === 'Backspace')) {
+        if (key === 'Escape' || key === 'c' || key === 'C' || (event.ctrlKey && key === 'Backspace')) {
             document.querySelector('button[data-value="C"]').click();
         }
     });
