@@ -1,0 +1,92 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #e0e0e0;
+    --dark-color: #343a40;
+    --background-color: #f0f0f0;
+    --button-hover-color: #d0d0d0;
+    --button-transition: background-color 0.3s;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--background-color);
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.calculator {
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.display {
+    margin-bottom: 20px;
+}
+
+#result {
+    width: 100%;
+    padding: 10px;
+    font-size: 2em;
+    text-align: right;
+    border: none;
+    background-color: var(--light-color);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.btn {
+    padding: 20px;
+    font-size: 1.5em;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--light-color);
+    cursor: pointer;
+    transition: var(--button-transition);
+}
+
+.btn:hover {
+    background-color: var(--button-hover-color);
+}
+
+.btn.mod {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn.mod:hover {
+    background-color: var(--dark-color);
+}
+
+.btn.enter {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.enter:hover {
+    background-color: var(--dark-color);
+}
+
+.btn.clear {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn.clear:hover {
+    background-color: var(--dark-color);
+}
