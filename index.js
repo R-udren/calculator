@@ -22,9 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 console.debug(history);
             } else {
+                if (isErrorMessage(result.value)) {
+                    result.value = '';
+                }
                 result.value += value;
             }
-
         });
     });
 
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Backspace' || key === 'Delete') {
-            if (result.value === 'Error :(' || result.value === 'Infinity' || result.value === 'NaN' || result.value === 'undefined') {
+            if (isErrorMessage(result.value)) {
                 result.value = '';
             }
 
@@ -58,3 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function isErrorMessage(message) {
+    return message === 'Error :(' || message === 'Infinity' || message === 'NaN' || message === 'undefined'
+}
