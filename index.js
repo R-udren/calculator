@@ -1,17 +1,21 @@
+const errorMessage = 'Error :(';
+
+let history = {};
+if (localStorage.getItem('history')) {
+    history = JSON.parse(localStorage.getItem('history'));
+}
+
+let previous = []; // Previous input and result (if not error)
+if (localStorage.getItem('previous')) {
+    previous = JSON.parse(localStorage.getItem('previous'));
+}
+
+let index = previous.length;
+
 document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('result');
     const buttons = document.querySelectorAll('.btn');
     const themeToggle = document.getElementById('theme-toggle');
-
-    let history = {};
-    if (localStorage.getItem('history')) {
-        history = JSON.parse(localStorage.getItem('history'));
-    }
-
-    let previous = []; // Previous input and result (if not error)
-    if (localStorage.getItem('previous')) {
-        previous = JSON.parse(localStorage.getItem('previous'));
-    }
 
     buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -23,24 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isErrorMessage(result.value)) {
                     result.value = '';
                 }
-                if (result.value !== '') {
+                if (result.value !== '' && result.value !== previous[previous.length - 1]) {
                     previous.push(result.value);
                     localStorage.setItem('previous', JSON.stringify(previous));
                 }
 
                 const input = result.value;
+
                 try {
                     result.value = new Function('return ' + result.value)();
                     if (!isErrorMessage(result.value)) {
-                        history[input] = result.value;
-                        localStorage.setItem('history', JSON.stringify(history));
-                        previous.push(result.value);
-                        localStorage.setItem('previous', JSON.stringify(previous));
+                        if (previous[previous.length - 1] !== input) {
+                            previous.push(result.value);
+                            localStorage.setItem('previous', JSON.stringify(previous));
+                        }
                     }
+                    index = previous.length;
                 } catch {
-                    result.value = 'Error :(';
+                    result.value = errorMessage;
                 }
 
+                history[input] = result.value;
+                localStorage.setItem('history', JSON.stringify(history));
 
             } else {
                 if (isErrorMessage(result.value)) {
@@ -64,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Enter' || key === '=') {
-
             document.querySelector('button[data-value="="]').click();
         }
 
@@ -79,9 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key === 'Escape' || key === 'c' || key === 'C' || (event.ctrlKey && key === 'Backspace')) {
             document.querySelector('button[data-value="C"]').click();
         }
+
+        // History navigation
+        if (key === 'ArrowUp') {
+            if (index > 0) {
+                index--;
+                result.value = previous[index];
+            }
+        }
+
+        if (key === 'ArrowDown') {
+            if (index < previous.length - 1) {
+                index++;
+                result.value = previous[index];
+            } else {
+                result.value = '';
+            }
+        }
     });
 });
 
 function isErrorMessage(message) {
-    return message === 'Error :(' || message === 'Infinity' || message === 'NaN' || message === 'undefined'
+    return message === errorMessage || message.includes('Infinity') || message === 'NaN' || message === 'undefined'
 }
