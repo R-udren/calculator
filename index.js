@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.btn');
     const themeToggle = document.getElementById('theme-toggle');
 
+    let history = {};
+
     buttons.forEach(button => {
         button.addEventListener('click', () => {
             const value = button.getAttribute('data-value');
@@ -10,14 +12,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (value === 'C') {
                 result.value = '';
             } else if (value === '=') {
+                const input = result.value;
                 try {
                     result.value = new Function('return ' + result.value)();
+                    history[input] = result.value;
                 } catch {
                     result.value = 'Error :(';
+                    history[input] = input;
                 }
+                console.debug(history);
             } else {
                 result.value += value;
             }
+
         });
     });
 
@@ -34,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Enter' || key === '=') {
+
             document.querySelector('button[data-value="="]').click();
         }
 
