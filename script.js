@@ -10,7 +10,9 @@ if (localStorage.getItem('previous')) {
     previous = JSON.parse(localStorage.getItem('previous'));
 }
 
-let index = previous.length;
+let script = previous.length;
+
+let isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('result');
@@ -24,8 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (value === 'C') {
                 result.value = '';
             } else if (value === '=') {
-                if (isErrorMessage(result.value)) {
+                if (isErrorMessage(result.value) || result.value === '') {
                     result.value = '';
+                    return;
                 }
                 if (result.value !== '' && result.value !== previous[previous.length - 1]) {
                     previous.push(result.value);
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             localStorage.setItem('previous', JSON.stringify(previous));
                         }
                     }
-                    index = previous.length;
+                    script = previous.length;
                 } catch {
                     result.value = errorMessage;
                 }
@@ -60,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     themeToggle.addEventListener('click', () => {
-        document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        toggleTheme();
     });
 
     document.addEventListener('keydown', event => {
@@ -72,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (key === 'Enter' || key === '=') {
+            event.preventDefault();
             document.querySelector('button[data-value="="]').click();
         }
 
@@ -89,16 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // History navigation
         if (key === 'ArrowUp') {
-            if (index > 0) {
-                index--;
-                result.value = previous[index];
+            if (script > 0) {
+                script--;
+                result.value = previous[script];
             }
         }
 
         if (key === 'ArrowDown') {
-            if (index < previous.length - 1) {
-                index++;
-                result.value = previous[index];
+            if (script < previous.length - 1) {
+                script++;
+                result.value = previous[script];
             } else {
                 result.value = '';
             }
@@ -108,4 +112,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function isErrorMessage(message) {
     return message === errorMessage || message.includes('Infinity') || message === 'NaN' || message === 'undefined'
+}
+
+function clearHistory() {
+    localStorage.clear();
+    location.reload();
+}
+
+function toggleTheme() {
+    isDark = !isDark;
+    applyTheme();
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+}
+
+function applyTheme() {
+    if (isDark) {
+        document.body.dataset.theme = 'dark';
+    } else {
+        document.body.dataset.theme = 'light';
+    }
 }
