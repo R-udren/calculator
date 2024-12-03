@@ -4,6 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
 
     let history = {};
+    if (localStorage.getItem('history')) {
+        history = JSON.parse(localStorage.getItem('history'));
+    }
+
+    let previous = []; // Previous input and result (if not error)
+    if (localStorage.getItem('previous')) {
+        previous = JSON.parse(localStorage.getItem('previous'));
+    }
 
     buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -12,15 +20,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (value === 'C') {
                 result.value = '';
             } else if (value === '=') {
+                if (isErrorMessage(result.value)) {
+                    result.value = '';
+                }
+                if (result.value !== '') {
+                    previous.push(result.value);
+                    localStorage.setItem('previous', JSON.stringify(previous));
+                }
+
                 const input = result.value;
                 try {
                     result.value = new Function('return ' + result.value)();
-                    history[input] = result.value;
+                    if (!isErrorMessage(result.value)) {
+                        history[input] = result.value;
+                        localStorage.setItem('history', JSON.stringify(history));
+                        previous.push(result.value);
+                        localStorage.setItem('previous', JSON.stringify(previous));
+                    }
                 } catch {
                     result.value = 'Error :(';
-                    history[input] = input;
                 }
-                console.debug(history);
+
+
             } else {
                 if (isErrorMessage(result.value)) {
                     result.value = '';
