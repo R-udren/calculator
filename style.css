@@ -113,7 +113,6 @@ body {
 .btn.clear {
     background-color: var(--danger-color);
     color: white;
-    grid-column: span 2;
 }
 
 .btn.clear:hover {
@@ -123,7 +122,6 @@ body {
 .btn.plus {
     background-color: var(--secondary-color);
     color: white;
-    grid-column: span 2;
 }
 
 .btn.plus:hover {
