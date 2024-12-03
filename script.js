@@ -12,7 +12,8 @@ if (localStorage.getItem('previous')) {
 
 let script = previous.length;
 
-let isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+let isDark = false;
+updateTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('result');
@@ -115,8 +116,20 @@ function isErrorMessage(message) {
 }
 
 function clearHistory() {
-    localStorage.clear();
-    location.reload();
+    localStorage.removeItem('history');
+    localStorage.removeItem('previous');
+    history = {};
+    previous = [];
+}
+
+function updateTheme() {
+    const theme = localStorage.getItem("theme");
+    if (theme) {
+        isDark = theme === "dark";
+    } else {
+        isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    applyTheme();
 }
 
 function toggleTheme() {
