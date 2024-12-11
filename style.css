@@ -103,7 +103,7 @@ body {
 .btn.enter {
     background-color: var(--primary-color);
     color: white;
-    grid-column: span 2;
+    /* grid-column: span 2; */	
 }
 
 .btn.enter:hover {

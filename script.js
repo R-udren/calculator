@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (value === 'C') {
                 result.value = '';
+			} else if (value === '%') {
+				result.value = `(${result.value})*0.01`;
             } else if (value === '=') {
                 if (isErrorMessage(result.value) || result.value === '') {
                     result.value = '';
