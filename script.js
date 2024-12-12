@@ -69,10 +69,18 @@ function validateInput(result) {
 
 function clearResult(result) {
     result.value = '';
+    currentHistoryIndex = prevEntries.length;
+    result.classList.remove('red-glow');
 }
 
 function applyPercentage(result) {
-    result.value = `(${result.value})*0.01`;
+    const currentValue = result.value;
+
+    if (currentValue && !isErrorMessage(currentValue)) {
+        result.value = `(${currentValue})*0.01`;
+    }
+
+    validateInput(result);
 }
 
 function evaluateResult(result) {
@@ -112,8 +120,9 @@ function appendValue(result, value) {
     }
 
     const currentValue = result.value;
+    const modifiers = ['+', '-', '*', '/'];
 
-    if ((currentValue.endsWith('-') && value === '+') || (currentValue.endsWith('+') && value === '-')) {
+    if (modifiers.includes(currentValue.slice(-1)) && modifiers.includes(value)) {
         result.value = currentValue.slice(0, -1) + value;
     } else {
         result.value += value;
