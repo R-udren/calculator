@@ -1,16 +1,17 @@
 const errorMessage = 'Error :(';
 
-let history = {};
-if (localStorage.getItem('history')) {
-    history = JSON.parse(localStorage.getItem('history'));
+const HISTORY_KEY = 'history';
+const PREVIOUS_KEY = 'previous';
+
+function getLocalStorageData(key, defaultValue) {
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? JSON.parse(storedValue) : defaultValue;
 }
 
-let previous = []; // Previous input and result (if not error)
-if (localStorage.getItem('previous')) {
-    previous = JSON.parse(localStorage.getItem('previous'));
-}
+let calculationHistory = getLocalStorageData(HISTORY_KEY, {});
+let previousEntries = getLocalStorageData(PREVIOUS_KEY, []);
 
-let script = previous.length;
+let script = previousEntries.length;
 
 let isDark = false;
 updateTheme();
@@ -33,9 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     result.value = '';
                     return;
                 }
-                if (result.value !== '' && result.value !== previous[previous.length - 1]) {
-                    previous.push(result.value);
-                    localStorage.setItem('previous', JSON.stringify(previous));
+                if (result.value !== '' && result.value !== previousEntries[previousEntries.length - 1]) {
+                    previousEntries.push(result.value);
+                    localStorage.setItem('previous', JSON.stringify(previousEntries));
                 }
 
                 const input = result.value;
@@ -43,18 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     result.value = new Function('return ' + result.value)();
                     if (!isErrorMessage(result.value)) {
-                        if (previous[previous.length - 1] !== input) {
-                            previous.push(result.value);
-                            localStorage.setItem('previous', JSON.stringify(previous));
+                        if (previousEntries[previousEntries.length - 1] !== input) {
+                            previousEntries.push(result.value);
+                            localStorage.setItem('previous', JSON.stringify(previousEntries));
                         }
                     }
-                    script = previous.length;
+                    script = previousEntries.length;
                 } catch {
                     result.value = errorMessage;
                 }
 
-                history[input] = result.value;
-                localStorage.setItem('history', JSON.stringify(history));
+                calculationHistory[input] = result.value;
+                localStorage.setItem('history', JSON.stringify(calculationHistory));
 
             } else {
                 if (isErrorMessage(result.value)) {
@@ -98,14 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key === 'ArrowUp') {
             if (script > 0) {
                 script--;
-                result.value = previous[script];
+                result.value = previousEntries[script];
             }
         }
 
         if (key === 'ArrowDown') {
-            if (script < previous.length - 1) {
+            if (script < previousEntries.length - 1) {
                 script++;
-                result.value = previous[script];
+                result.value = previousEntries[script];
             } else {
                 result.value = '';
             }
@@ -120,8 +121,8 @@ function isErrorMessage(message) {
 function clearHistory() {
     localStorage.removeItem('history');
     localStorage.removeItem('previous');
-    history = {};
-    previous = [];
+    calculationHistory = {};
+    previousEntries = [];
 }
 
 function updateTheme() {
