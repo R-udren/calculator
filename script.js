@@ -63,29 +63,30 @@ function applyPercentage(result) {
 }
 
 function evaluateResult(result) {
-    if (isErrorMessage(result.value) || result.value === '') {
+    const input = result.value;
+
+    if (isErrorMessage(input) || input === '') {
         result.value = '';
         return;
     }
 
-    if (result.value !== '' && result.value !== prevEntries[prevEntries.length - 1]) {
-        prevEntries.push(result.value);
+    if (input !== '' && input !== prevEntries[prevEntries.length - 1]) {
+        prevEntries.push(input);
         updateLocalStorage(PREVIOUS_KEY, prevEntries);
     }
-
-    const input = result.value;
 
     try {
         result.value = new Function(`return ${result.value}`)();
         if (!isErrorMessage(result.value)) {
-            if (prevEntries[prevEntries.length - 1] !== input) {
+            if (prevEntries[prevEntries.length - 1] !== result.value) {
                 prevEntries.push(result.value);
                 updateLocalStorage(PREVIOUS_KEY, prevEntries);
             }
         }
-        currentHistoryIndex = prevEntries.length;
+        currentHistoryIndex = prevEntries.length - 1;
     } catch {
         result.value = ERROR_MESSAGE;
+        currentHistoryIndex = prevEntries.length;
     }
 
     calcHistory[input] = result.value;
@@ -169,6 +170,7 @@ function navigateHistoryDown(result) {
         result.value = prevEntries[currentHistoryIndex];
     } else {
         result.value = '';
+        currentHistoryIndex = prevEntries.length;
     }
 }
 
