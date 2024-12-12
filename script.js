@@ -1,6 +1,7 @@
 const ERROR_MESSAGE = 'Error :(';
 const HISTORY_KEY = 'history';
 const PREVIOUS_KEY = 'previous';
+const modifiers = ['+', '-', '*', '/'];
 
 let calcHistory = getLocalStorageData(HISTORY_KEY, {});
 let prevEntries = getLocalStorageData(PREVIOUS_KEY, []);
@@ -13,14 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('result');
     const buttons = document.querySelectorAll('.btn');
     const themeToggle = document.getElementById('theme-toggle');
+    const clearHistoryBtn = document.getElementById('clear-history');
 
     buttons.forEach(button => {
         button.addEventListener('click', () => handleButtonClick(button, result));
     });
 
+    clearHistoryBtn.addEventListener('click', clearHistory);
+
     themeToggle.addEventListener('click', toggleTheme);
 
     document.addEventListener('keydown', event => handleKeyDown(event, result));
+
+    renderHistory();
 });
 
 function getLocalStorageData(key, defaultValue) {
@@ -91,27 +97,24 @@ function evaluateResult(result) {
         return;
     }
 
-    if (input !== '' && input !== prevEntries[prevEntries.length - 1]) {
+    if (prevEntries[prevEntries.length - 1] !== input && input !== '') {
         prevEntries.push(input);
         updateLocalStorage(PREVIOUS_KEY, prevEntries);
     }
 
     try {
-        result.value = new Function(`return ${result.value}`)();
-        if (!isErrorMessage(result.value)) {
-            if (prevEntries[prevEntries.length - 1] !== result.value) {
-                prevEntries.push(result.value);
-                updateLocalStorage(PREVIOUS_KEY, prevEntries);
-            }
-        }
+        const evalResult = new Function(`return ${input}`)();
+        result.value = evalResult;
+
+        prevEntries.push(evalResult);
         currentHistoryIndex = prevEntries.length - 1;
+
     } catch {
         result.value = ERROR_MESSAGE;
+        result.classList.add('red-glow');
         currentHistoryIndex = prevEntries.length;
     }
-
-    calcHistory[input] = result.value;
-    updateLocalStorage(HISTORY_KEY, calcHistory);
+    addToHistory(input, result.value);
 }
 
 function appendValue(result, value) {
@@ -120,7 +123,6 @@ function appendValue(result, value) {
     }
 
     const currentValue = result.value;
-    const modifiers = ['+', '-', '*', '/'];
 
     if (modifiers.includes(currentValue.slice(-1)) && modifiers.includes(value)) {
         result.value = currentValue.slice(0, -1) + value;
@@ -205,12 +207,6 @@ function navigateHistoryDown(result) {
     }
 }
 
-function clearHistory() {
-    localStorage.removeItem(HISTORY_KEY);
-    localStorage.removeItem(PREVIOUS_KEY);
-    calcHistory = {};
-    prevEntries = [];
-}
 
 function updateTheme() {
     const theme = localStorage.getItem('theme');
@@ -226,4 +222,50 @@ function toggleTheme() {
 
 function applyTheme() {
     document.body.dataset.theme = isDark ? 'dark' : 'light';
+}
+
+function addToHistory(input, result) {
+    calcHistory[input] = result;
+    updateLocalStorage(HISTORY_KEY, calcHistory);
+
+    renderHistory();
+}
+
+function renderHistory() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
+
+    Object.keys(calcHistory).forEach((input) => {
+        const result = calcHistory[input];
+
+        const listItem = document.createElement('li');
+        listItem.className = 'history-item';
+        listItem.innerText = `${input} = ${result}`;
+
+        const deleteButton = document.createElement('span');
+        deleteButton.innerHTML = '🗑️';
+        deleteButton.className = 'delete-btn';
+        deleteButton.setAttribute('data-input', input);
+
+        deleteButton.addEventListener('click', () => deleteHistoryEntry(input));
+
+        listItem.appendChild(deleteButton);
+        historyList.appendChild(listItem);
+    });
+}
+
+function deleteHistoryEntry(input) {
+    delete calcHistory[input];
+    updateLocalStorage(HISTORY_KEY, calcHistory);
+
+    renderHistory();
+}
+
+function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(PREVIOUS_KEY);
+    calcHistory = {};
+    prevEntries = [];
+
+    renderHistory();
 }
