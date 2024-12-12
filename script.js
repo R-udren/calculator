@@ -122,24 +122,26 @@ function evaluateResult(result) {
         const evalResult = new Function(`return ${input}`)();
         result.value = evalResult;
 
-        result.classList.remove('error-glow');
-        result.classList.add('glow');
+        if (evalResult.toString() !== input) {
+            result.classList.remove('error-glow');
+            result.classList.add('glow');
 
-        setTimeout(() => {
-            result.classList.remove('glow');
-        }, 3000)
+            setTimeout(() => {
+                result.classList.remove('glow');
+            }, 3000)
 
-        prevEntries.push(evalResult);
-        currentHistoryIndex = prevEntries.length - 1;
+            prevEntries.push(evalResult);
+            currentHistoryIndex = prevEntries.length - 1;
+            addToHistory(input, result.value);
+            isResult = true;
+        }
 
     } catch {
         result.value = ERROR_MESSAGE;
         result.classList.add('error-glow');
         currentHistoryIndex = prevEntries.length;
     }
-    addToHistory(input, result.value);
     result.focus();
-    isResult = true;
 }
 
 function appendValue(result, value) {

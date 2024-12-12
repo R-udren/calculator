@@ -240,10 +240,10 @@ body {
 }
 
 .calculator {
-    flex: 60%;
+    flex: 65%;
 }
 
 #history-section {
-    flex: 40%;
+    flex: 35%;
 }
 
