@@ -1,7 +1,7 @@
 const ERROR_MESSAGE = 'Error :(';
 const HISTORY_KEY = 'history';
 const PREVIOUS_KEY = 'previous';
-const modifiers = ['+', '-', '*', '/'];
+const modifiers = ['+', '-', '*', '/', '%'];
 
 let calcHistory = getLocalStorageData(HISTORY_KEY, {});
 let prevEntries = getLocalStorageData(PREVIOUS_KEY, []);
@@ -40,11 +40,15 @@ function updateLocalStorage(key, value) {
 }
 
 function handleButtonClick(button, result) {
+    const value = button.getAttribute('data-value');
+    const isOperator = modifiers.includes(value);
+
     if (isResult) {
-        result.value = '';
+        if (!isOperator) {
+            result.value = '';
+        }
         isResult = false;
     }
-    const value = button.getAttribute('data-value');
 
     switch (value) {
         case 'C':
