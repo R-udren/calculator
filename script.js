@@ -52,6 +52,19 @@ function handleButtonClick(button, result) {
             appendValue(result, value);
             break;
     }
+
+    button.blur();
+}
+
+function validateInput(result) {
+    try {
+        if (result.value && !isErrorMessage(result.value)) {
+            new Function(`return ${result.value}`)();
+            result.classList.remove('red-glow')
+        }
+    } catch {
+        result.classList.add('red-glow');
+    }
 }
 
 function clearResult(result) {
@@ -97,7 +110,16 @@ function appendValue(result, value) {
     if (isErrorMessage(result.value)) {
         result.value = '';
     }
-    result.value += value;
+
+    const currentValue = result.value;
+
+    if ((currentValue.endsWith('-') && value === '+') || (currentValue.endsWith('+') && value === '-')) {
+        result.value = currentValue.slice(0, -1) + value;
+    } else {
+        result.value += value;
+    }
+
+    validateInput(result);
 }
 
 function isErrorMessage(message) {

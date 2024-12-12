@@ -127,3 +127,8 @@ body {
 .btn.plus:hover {
     background-color: var(--dark-color);
 }
+
+.red-glow {
+    border: 2px solid var(--danger-color);
+    box-shadow: 0 0 5px var(--danger-color);
+}
