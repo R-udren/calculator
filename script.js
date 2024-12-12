@@ -8,6 +8,7 @@ let prevEntries = getLocalStorageData(PREVIOUS_KEY, []);
 let currentHistoryIndex = prevEntries.length;
 
 let isDark = false;
+let isResult = false;
 updateTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,6 +40,10 @@ function updateLocalStorage(key, value) {
 }
 
 function handleButtonClick(button, result) {
+    if (isResult) {
+        result.value = '';
+        isResult = false;
+    }
     const value = button.getAttribute('data-value');
 
     switch (value) {
@@ -63,14 +68,19 @@ function handleButtonClick(button, result) {
 }
 
 function validateInput(result) {
-    try {
-        if (result.value && !isErrorMessage(result.value)) {
-            new Function(`return ${result.value}`)();
-            result.classList.remove('error-glow')
-        }
-    } catch {
-        console.log('Invalid input detected!');
+    if (isErrorMessage(result.value) || !isValidInput(result)) {
         result.classList.add('error-glow');
+    } else {
+        result.classList.remove('error-glow');
+    }
+}
+
+function isValidInput(result) {
+    try {
+        new Function(`return ${result.value}`)();
+        return !isErrorMessage(result.value);
+    } catch {
+        return false;
     }
 }
 
@@ -83,7 +93,7 @@ function clearResult(result) {
 function applyPercentage(result) {
     const currentValue = result.value;
 
-    if (currentValue && !isErrorMessage(currentValue)) {
+    if (currentValue && !isErrorMessage(currentValue) && isValidInput(result)) {
         result.value = `(${currentValue})*0.01`;
     }
 
@@ -124,6 +134,8 @@ function evaluateResult(result) {
         currentHistoryIndex = prevEntries.length;
     }
     addToHistory(input, result.value);
+    result.focus();
+    isResult = true;
 }
 
 function appendValue(result, value) {
@@ -213,6 +225,7 @@ function handleBackspace(result) {
     } else {
         result.value = result.value.slice(0, -1);
     }
+    validateInput(result);
 }
 
 function navigateHistoryUp(result) {

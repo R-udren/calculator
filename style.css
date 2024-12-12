@@ -146,7 +146,6 @@ body {
 
 #history-section {
     width: 30%;
-    max-height: 100%;
     overflow-y: auto;
     box-shadow: -3px 0 8px var(--shadow-color);
     padding: 15px;
@@ -157,7 +156,7 @@ body {
 
 #clear-history {
     display: block;
-    width: 100%;
+    width: 95%;
     background-color: var(--danger-color);
     color: white;
     font-size: 14px;
@@ -169,6 +168,7 @@ body {
     cursor: pointer;
     box-shadow: 0 2px 6px var(--shadow-color);
     transition: var(--button-transition);
+    outline: none;
 }
 
 #clear-history:hover {
@@ -179,10 +179,16 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--light-color) var(--background-color);
+    border-radius: 10px;
 }
 
 .history-item {
     display: flex;
+    width: 80%;
     justify-content: space-between;
     align-items: center;
     background-color: var(--light-color);
@@ -234,9 +240,10 @@ body {
 }
 
 .calculator {
-    flex: 70%;
+    flex: 60%;
 }
 
 #history-section {
-    flex: 30%;
+    flex: 40%;
 }
+
