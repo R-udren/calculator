@@ -128,7 +128,109 @@ body {
     background-color: var(--dark-color);
 }
 
-.red-glow {
+.error-glow {
     border: 2px solid var(--danger-color);
     box-shadow: 0 0 8px var(--danger-color);
+}
+
+.glow {
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 8px var(--primary-color);
+}
+
+/* Updated History Section */
+#history-section {
+    width: 30%; /* Adjust width for styling */
+    max-height: 100%; /* Full height */
+    overflow-y: auto; /* Scroll overflow */
+    box-shadow: -3px 0 8px var(--shadow-color); /* Shadow on left to separate from calc */
+    padding: 15px;
+    border-left: 2px solid var(--light-color); /* Border for crisp separation */
+    background: var(--background-color);
+    font-family: Arial, sans-serif;
+}
+
+#clear-history {
+    display: block;
+    width: 100%;
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 12px 8px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0px 2px 6px var(--shadow-color);
+    transition: var(--button-transition);
+}
+
+#clear-history:hover {
+    background: #ff3535;
+}
+
+#history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 8px 0;
+    font-size: 0.9em;
+    position: relative;
+    transition: background-color 0.2s ease;
+    box-shadow: 1px 1px 4px var(--shadow-color);
+}
+
+/* Hover Effect on History Item */
+.history-item:hover {
+    background-color: var(--button-hover-color); /* Slight contrast */
+}
+
+/* Delete Button (🗑️) */
+.delete-btn {
+    display: none;
+    font-size: 18px;
+    color: var(--danger-color);
+    cursor: pointer;
+    margin-left: 10px;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.history-item:hover .delete-btn {
+    display: inline;
+}
+
+.delete-btn:hover {
+    transform: scale(1.2);
+    color: var(--dark-color);
+}
+
+.calculator-container {
+    display: flex;
+    gap: 20px;
+    width: 50%;
+    max-width: 1200px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    background-color: var(--background-color);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.calculator {
+    flex: 70%;
+}
+
+#history-section {
+    flex: 30%;
 }
