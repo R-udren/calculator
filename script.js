@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => handleButtonClick(button, result));
     });
 
-    clearHistoryBtn.addEventListener('click', clearHistory);
+    clearHistoryBtn.addEventListener('click', clearHistory.bind(null, result));
 
     themeToggle.addEventListener('click', toggleTheme);
 
@@ -66,17 +66,18 @@ function validateInput(result) {
     try {
         if (result.value && !isErrorMessage(result.value)) {
             new Function(`return ${result.value}`)();
-            result.classList.remove('red-glow')
+            result.classList.remove('error-glow')
         }
     } catch {
-        result.classList.add('red-glow');
+        console.log('Invalid input detected!');
+        result.classList.add('error-glow');
     }
 }
 
 function clearResult(result) {
     result.value = '';
     currentHistoryIndex = prevEntries.length;
-    result.classList.remove('red-glow');
+    result.classList.remove('error-glow');
 }
 
 function applyPercentage(result) {
@@ -94,6 +95,7 @@ function evaluateResult(result) {
 
     if (isErrorMessage(input) || input === '') {
         result.value = '';
+        result.classList.remove('error-glow');
         return;
     }
 
@@ -106,12 +108,19 @@ function evaluateResult(result) {
         const evalResult = new Function(`return ${input}`)();
         result.value = evalResult;
 
+        result.classList.remove('error-glow');
+        result.classList.add('glow');
+
+        setTimeout(() => {
+            result.classList.remove('glow');
+        }, 3000)
+
         prevEntries.push(evalResult);
         currentHistoryIndex = prevEntries.length - 1;
 
     } catch {
         result.value = ERROR_MESSAGE;
-        result.classList.add('red-glow');
+        result.classList.add('error-glow');
         currentHistoryIndex = prevEntries.length;
     }
     addToHistory(input, result.value);
@@ -121,6 +130,8 @@ function appendValue(result, value) {
     if (isErrorMessage(result.value)) {
         result.value = '';
     }
+
+    result.classList.remove('error-glow', 'glow');
 
     const currentValue = result.value;
 
@@ -144,11 +155,32 @@ function isErrorMessage(message) {
 
 function handleKeyDown(event, result) {
     const key = event.key;
+    const ctrl = event.ctrlKey;
+
     const button = document.querySelector(`button[data-value="${key}"]`);
 
     if (button) {
         button.click();
         return;
+    }
+
+    if (ctrl && key === 'c') {
+        navigator.clipboard.writeText(result.value).then();
+        return;
+    }
+
+    if (ctrl && key === 'ArrowUp') {
+        navigateHistoryUp(result);
+        return;
+    }
+
+    if (ctrl && key === 'ArrowDown') {
+        navigateHistoryDown(result);
+        return;
+    }
+
+    if (ctrl && key === 'Backspace') {
+        document.querySelector('button[data-value="C"]').click();
     }
 
     switch (key) {
@@ -157,27 +189,20 @@ function handleKeyDown(event, result) {
             event.preventDefault();
             document.querySelector('button[data-value="="]').click();
             break;
-
         case 'Backspace':
         case 'Delete':
             handleBackspace(result);
             break;
-
         case 'Escape':
         case 'c':
         case 'C':
             document.querySelector('button[data-value="C"]').click();
             break;
-
         case 'ArrowUp':
             navigateHistoryUp(result);
             break;
-
         case 'ArrowDown':
             navigateHistoryDown(result);
-            break;
-
-        default:
             break;
     }
 }
@@ -261,11 +286,13 @@ function deleteHistoryEntry(input) {
     renderHistory();
 }
 
-function clearHistory() {
+function clearHistory(result) {
     localStorage.removeItem(HISTORY_KEY);
     localStorage.removeItem(PREVIOUS_KEY);
     calcHistory = {};
     prevEntries = [];
+
+    result.value = '';
 
     renderHistory();
 }
