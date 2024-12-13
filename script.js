@@ -187,16 +187,6 @@ function handleKeyDown(event, result) {
         return;
     }
 
-    if (ctrl && key === 'ArrowUp') {
-        navigateHistoryUp(result);
-        return;
-    }
-
-    if (ctrl && key === 'ArrowDown') {
-        navigateHistoryDown(result);
-        return;
-    }
-
     if (ctrl && key === 'Backspace') {
         document.querySelector('button[data-value="C"]').click();
     }
