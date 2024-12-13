@@ -3,6 +3,8 @@
 Vanilla JavaScript calculator with basic arithmetic operations, history of calculations, and keyboard support. The
 calculator has a responsive design and supports both light and dark themes.
 
+Preview is available [Here](https://lvca.pages.dev/).
+
 ## Features
 
 - [x] Basic arithmetic operations
