@@ -135,7 +135,7 @@ function setResultState(result, output, input) {
     result.value = output;
     isResult = true;
 
-    if (output !== input) {
+    if (String(output) !== String(input)) {
         toggleClass(result, 'error-glow', false);
         animateGlow(result);
         addToHistory(input, output);
