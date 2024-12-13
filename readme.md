@@ -27,14 +27,25 @@ Dark theme:
     ```bash
     git clone https://github.com/R-udren/calculator.git 
     ```
-
 2. Navigate to the project directory
     ```bash
     cd calculator
     ```
-3. Run index.html in your browser or host the files on a server
+3. Install the dependencies
     ```bash
-    python -m http.server
+    npm install
+    ```
+4. Start the development server
+    ```bash
+    npm run dev
+    ```
+5. Build the production-ready files
+    ```bash
+    npm run build
+    ```
+6. Preview the built app (optional, ensures everything works as expected after the build)
+    ```bash
+    npm run preview
     ```
 
 ## Usage
