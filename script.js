@@ -1,34 +1,32 @@
 const ERROR_MESSAGE = 'Error :(';
+const INVALID_INPUT_MESSAGE = 'Invalid input';
 const HISTORY_KEY = 'history';
 const PREVIOUS_KEY = 'previous';
 const modifiers = ['+', '-', '*', '/', '%'];
 
 let calcHistory = getLocalStorageData(HISTORY_KEY, {});
 let prevEntries = getLocalStorageData(PREVIOUS_KEY, []);
-let currentHistoryIndex = prevEntries.length;
+let currentEntryIndex = prevEntries.length;
 
 let isDark = false;
 let isResult = false;
-updateTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
+    initCalculator();
+    updateTheme();
+});
+
+function initCalculator() {
     const result = document.getElementById('result');
-    const buttons = document.querySelectorAll('.btn');
-    const themeToggle = document.getElementById('theme-toggle');
-    const clearHistoryBtn = document.getElementById('clear-history');
 
-    buttons.forEach(button => {
-        button.addEventListener('click', () => handleButtonClick(button, result));
-    });
+    attachListener('.btn', 'click', (button) => handleButtonInput(button, result));
+    attachListener('#clear-history', 'click', () => clearHistory(result));
+    attachListener('#theme-toggle', 'click', toggleTheme);
 
-    clearHistoryBtn.addEventListener('click', clearHistory.bind(null, result));
-
-    themeToggle.addEventListener('click', toggleTheme);
-
-    document.addEventListener('keydown', event => handleKeyDown(event, result));
+    document.addEventListener('keydown', (event) => handleKeyDown(event, result));
 
     renderHistory();
-});
+}
 
 function getLocalStorageData(key, defaultValue) {
     const storedValue = localStorage.getItem(key);
@@ -39,10 +37,20 @@ function updateLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
 
-function handleButtonClick(button, result) {
+function attachListener(selector, event, handler) {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach((element) => {
+        element.addEventListener(event, (e) => handler(e.target));
+    });
+}
+
+function handleButtonInput(button, result) {
     const value = button.getAttribute('data-value');
     const isOperator = modifiers.includes(value);
 
+    // Clear input if result is displayed and pressed button is not an operator but a number
+    // This allows the user to start a new calculation with the result by firstly pressing an operator button
+    // But if is pressed button, then input will reset
     if (isResult) {
         if (!isOperator) {
             result.value = '';
@@ -50,159 +58,159 @@ function handleButtonClick(button, result) {
         isResult = false;
     }
 
+    processInput(value, result);
+    button.blur();
+}
+
+function processInput(value, result) {
     switch (value) {
         case 'C':
-            clearResult(result);
+            clearInput(result);
             break;
-
         case '%':
             applyPercentage(result);
             break;
-
         case '=':
-            evaluateResult(result);
+            evaluateExpression(result);
             break;
-
         default:
             appendValue(result, value);
             break;
     }
-
-    button.blur();
 }
 
 function validateInput(result) {
-    if (isErrorMessage(result.value) || !isValidInput(result)) {
-        result.classList.add('error-glow');
-    } else {
-        result.classList.remove('error-glow');
-    }
+    const valid = isValidInput(result.value);
+    toggleClass(result, 'error-glow', !valid);
+    return valid;
 }
 
-function isValidInput(result) {
+function isValidInput(input) {
     try {
-        new Function(`return ${result.value}`)();
-        return !isErrorMessage(result.value);
+        new Function(`return ${input}`)();
+        return !isError(input);
     } catch {
         return false;
     }
 }
 
-function clearResult(result) {
+function clearInput(result) {
     result.value = '';
-    currentHistoryIndex = prevEntries.length;
-    result.classList.remove('error-glow');
+    currentEntryIndex = prevEntries.length;
+    toggleClass(result, 'error-glow', false);
+    isResult = false;
 }
 
 function applyPercentage(result) {
     const currentValue = result.value;
-
-    if (currentValue && !isErrorMessage(currentValue) && isValidInput(result)) {
+    if (currentValue && validateInput(result)) {
         result.value = `(${currentValue})*0.01`;
+        validateInput(result);
     }
-
-    validateInput(result);
 }
 
-function evaluateResult(result) {
-    const input = result.value;
+function evaluateExpression(result) {
+    const input = result.value.trim();
 
-    if (isErrorMessage(input) || input === '') {
-        result.value = '';
-        result.classList.remove('error-glow');
+    if (isError(input)) {
+        clearInput(result);
         return;
     }
 
-    if (prevEntries[prevEntries.length - 1] !== input && input !== '') {
-        prevEntries.push(input);
-        updateLocalStorage(PREVIOUS_KEY, prevEntries);
+    addPreviousEntry(input);
+
+    if (!validateInput(result) || !input) {
+        return setErrorState(result, INVALID_INPUT_MESSAGE);
     }
 
     try {
         const evalResult = new Function(`return ${input}`)();
-        result.value = evalResult;
-
-        if (evalResult.toString() !== input) {
-            result.classList.remove('error-glow');
-            result.classList.add('glow');
-
-            setTimeout(() => {
-                result.classList.remove('glow');
-            }, 3000)
-
-            prevEntries.push(evalResult);
-            currentHistoryIndex = prevEntries.length - 1;
-            addToHistory(input, result.value);
-            isResult = true;
-        }
-
+        setResultState(result, evalResult, input);
     } catch {
-        result.value = ERROR_MESSAGE;
-        result.classList.add('error-glow');
-        currentHistoryIndex = prevEntries.length;
+        setErrorState(result, ERROR_MESSAGE);
     }
-    result.focus();
+}
+
+function setResultState(result, output, input) {
+    result.value = output;
+    isResult = true;
+
+    if (output !== input) {
+        toggleClass(result, 'error-glow', false);
+        animateGlow(result);
+        addToHistory(input, output);
+        addPreviousEntry(output); // Add result to previous entries
+        currentEntryIndex = prevEntries.length - 1; // Set entry index to the last entry
+    }
+}
+
+function setErrorState(result, message) {
+    result.value = message;
+    toggleClass(result, 'error-glow', !!message);
+    currentEntryIndex = prevEntries.length;
+}
+
+function addPreviousEntry(input) {
+    if (prevEntries[prevEntries.length - 1] !== input && input !== '') {
+        prevEntries.push(input);
+        updateLocalStorage(PREVIOUS_KEY, prevEntries);
+    }
 }
 
 function appendValue(result, value) {
-    if (isErrorMessage(result.value)) {
-        result.value = '';
+    if (isError(result.value)) {
+        clearInput(result);
     }
-
-    result.classList.remove('error-glow', 'glow');
 
     const currentValue = result.value;
-
-    if (modifiers.includes(currentValue.slice(-1)) && modifiers.includes(value)) {
-        result.value = currentValue.slice(0, -1) + value;
-    } else {
-        result.value += value;
-    }
+    result.value = modifiers.includes(currentValue.slice(-1)) && modifiers.includes(value)
+        ? currentValue.slice(0, -1) + value
+        : currentValue + value;
 
     validateInput(result);
 }
 
-function isErrorMessage(message) {
-    return (
-        message === ERROR_MESSAGE ||
-        message.includes('Infinity') ||
-        message === 'NaN' ||
-        message === 'undefined'
-    );
+function isError(message) {
+    return [ERROR_MESSAGE, INVALID_INPUT_MESSAGE, 'Infinity', 'NaN', 'undefined'].some((err) => message.includes(err));
+    // TODO: maybe we should check if return value is a number?
 }
 
 function handleKeyDown(event, result) {
     const key = event.key;
     const ctrl = event.ctrlKey;
+    const keyMapping = {
+        Enter: '=', '=': '=',
+        Backspace: 'Backspace', Delete: 'Backspace',
+        Escape: 'C', c: 'C', C: 'C',
+        ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown',
+    };
 
-    const button = document.querySelector(`button[data-value="${key}"]`);
-
-    if (button) {
-        button.click();
+    const mappedKey = keyMapping[key];
+    if (!mappedKey) {
+        const button = document.querySelector(`button[data-value="${key}"]`);
+        button?.click();
         return;
     }
 
-    if (ctrl && key === 'c') {
-        navigator.clipboard.writeText(result.value).then();
-        return;
-    }
+    event.preventDefault();
 
     if (ctrl && key === 'Backspace') {
-        document.querySelector('button[data-value="C"]').click();
+        clearInput(result);
+        return;
     }
 
-    switch (key) {
-        case 'Enter':
+    if (ctrl && key.toLowerCase() === 'c') {
+        navigator.clipboard.writeText(result.value);
+        return;
+    }
+
+    switch (mappedKey) {
         case '=':
-            event.preventDefault();
             document.querySelector('button[data-value="="]').click();
             break;
         case 'Backspace':
-        case 'Delete':
             handleBackspace(result);
             break;
-        case 'Escape':
-        case 'c':
         case 'C':
             document.querySelector('button[data-value="C"]').click();
             break;
@@ -216,8 +224,8 @@ function handleKeyDown(event, result) {
 }
 
 function handleBackspace(result) {
-    if (isErrorMessage(result.value)) {
-        result.value = '';
+    if (isError(result.value)) {
+        clearInput(result);
     } else {
         result.value = result.value.slice(0, -1);
     }
@@ -225,22 +233,18 @@ function handleBackspace(result) {
 }
 
 function navigateHistoryUp(result) {
-    if (currentHistoryIndex > 0) {
-        currentHistoryIndex--;
-        result.value = prevEntries[currentHistoryIndex];
-    }
+    if (currentEntryIndex > 0) result.value = prevEntries[--currentEntryIndex];
 }
 
 function navigateHistoryDown(result) {
-    if (currentHistoryIndex < prevEntries.length - 1) {
-        currentHistoryIndex++;
-        result.value = prevEntries[currentHistoryIndex];
+    if (currentEntryIndex < prevEntries.length - 1) {
+        currentEntryIndex++;
+        result.value = prevEntries[currentEntryIndex];
     } else {
-        result.value = '';
-        currentHistoryIndex = prevEntries.length;
+        clearInput(result);
+        currentEntryIndex = prevEntries.length;
     }
 }
-
 
 function updateTheme() {
     const theme = localStorage.getItem('theme');
@@ -258,6 +262,15 @@ function applyTheme() {
     document.body.dataset.theme = isDark ? 'dark' : 'light';
 }
 
+function clearHistory(result) {
+    localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(PREVIOUS_KEY);
+    calcHistory = {};
+    prevEntries = [];
+    clearInput(result);
+    renderHistory();
+}
+
 function addToHistory(input, result) {
     calcHistory[input] = result;
     updateLocalStorage(HISTORY_KEY, calcHistory);
@@ -269,39 +282,38 @@ function renderHistory() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '';
 
-    Object.keys(calcHistory).forEach((input) => {
-        const result = calcHistory[input];
-
-        const listItem = document.createElement('li');
-        listItem.className = 'history-item';
-        listItem.innerText = `${input} = ${result}`;
-
-        const deleteButton = document.createElement('span');
-        deleteButton.innerHTML = '🗑️';
-        deleteButton.className = 'delete-btn';
-        deleteButton.setAttribute('data-input', input);
-
-        deleteButton.addEventListener('click', () => deleteHistoryEntry(input));
-
-        listItem.appendChild(deleteButton);
+    Object.entries(calcHistory).forEach(([input, output]) => {
+        const listItem = createHistoryItem(input, output);
         historyList.appendChild(listItem);
     });
+}
+
+function createHistoryItem(input, output) {
+    const listItem = document.createElement('li');
+    listItem.className = 'history-item';
+    listItem.innerText = `${input} = ${output}`;
+
+    const deleteButton = document.createElement('span');
+    deleteButton.innerHTML = '🗑️';
+    deleteButton.className = 'delete-btn';
+    deleteButton.setAttribute('data-input', input);
+    deleteButton.addEventListener('click', () => deleteHistoryEntry(input));
+
+    listItem.appendChild(deleteButton);
+    return listItem;
 }
 
 function deleteHistoryEntry(input) {
     delete calcHistory[input];
     updateLocalStorage(HISTORY_KEY, calcHistory);
-
     renderHistory();
 }
 
-function clearHistory(result) {
-    localStorage.removeItem(HISTORY_KEY);
-    localStorage.removeItem(PREVIOUS_KEY);
-    calcHistory = {};
-    prevEntries = [];
+function animateGlow(element) {
+    toggleClass(element, 'glow', true);
+    setTimeout(() => toggleClass(element, 'glow', false), 3000);
+}
 
-    result.value = '';
-
-    renderHistory();
+function toggleClass(element, className, condition) {
+    element.classList.toggle(className, condition);
 }
